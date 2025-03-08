@@ -89,7 +89,7 @@ export default function Home() {
             <div className="bg-[#2d2d2d] rounded-lg shadow-sm p-6 mb-6 border border-[#3d3d3d]">
               <LoginButton
                 provider="google"
-                className="w-full bg-[#3d3d3d] hover:bg-[#4d4d4d] text-white mb-4"
+                className="w-full bg-[#3d3d3d] hover:bg-[#4d4d4d] text-white mb-6"
               >
                 <svg
                   className="w-5 h-5 mr-2"
@@ -120,27 +120,7 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-[#3d3d3d]"></div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-[#2d2d2d] text-gray-500">OR</span>
-                </div>
               </div>
-
-              <form onSubmit={handleEmailSubmit}>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="w-full bg-[#212121] border border-[#3d3d3d] rounded-md p-3 mb-4 text-white placeholder-gray-500 focus:outline-none focus:border-[#64ffda]"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <button
-                  type="submit"
-                  className="w-full accent-btn"
-                >
-                  Continue with email
-                </button>
-              </form>
 
               <p className="text-xs text-gray-500 mt-4">
                 By continuing, you agree to RezAI's{" "}
@@ -211,7 +191,7 @@ export default function Home() {
                 </svg>
               }
               title="Multiple Export Formats"
-              description="Download your polished resume in PDF, DOCX, TXT, or HTML formats, ready to submit to employers or upload to job sites."
+              description="Download your polished resume in PDF, DOCX ready to submit to employers or upload to job sites."
               delay="delay-300"
             />
           </div>
