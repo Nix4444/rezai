@@ -1,24 +1,77 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Rezai - Your ideas, amplified
+
+A privacy-first AI application that helps you create in confidence.
+
+## Features
+
+- Modern landing page with authentication
+- Google OAuth integration with Next Auth
+- Responsive design
+- Chat interface
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18.x or higher
+- npm or yarn
+
+### Installation
+
+1. Clone the repository
+2. Install dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+3. Create a `.env.local` file in the frontend directory with the following variables:
+
+```
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_nextauth_secret_key_here
+GOOGLE_CLIENT_ID=your_google_client_id_here
+GOOGLE_CLIENT_SECRET=your_google_client_secret_here
+```
+
+4. To get your Google OAuth credentials:
+   - Go to the [Google Cloud Console](https://console.cloud.google.com/)
+   - Create a new project or select an existing one
+   - Navigate to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "OAuth client ID"
+   - Select "Web application" as the application type
+   - Add "http://localhost:3000" to the authorized JavaScript origins
+   - Add "http://localhost:3000/api/auth/callback/google" to the authorized redirect URIs
+   - Click "Create" and copy your Client ID and Client Secret to your `.env.local` file
+
+### Running the Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `/app` - Next.js app directory
+  - `/api` - API routes including Next Auth
+  - `/components` - Reusable UI components
+  - `/chat` - Chat page
+- `/public` - Static assets
+
+## Technologies Used
+
+- Next.js 15
+- React 19
+- Next Auth
+- Tailwind CSS
+- TypeScript
+
+## License
+
+This project is licensed under the MIT License.
 
 ## Learn More
 

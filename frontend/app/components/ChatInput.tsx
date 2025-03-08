@@ -64,11 +64,11 @@ export function ChatInput(props: InputProps) {
   };
 
   return (
-    <div className="relative mb-20">
+    <div className="relative">
       <div className="relative">
         <textarea
-          placeholder="Talk to your database..."
-          className="w-200 border bg-[#303030] border-slate-300 px-6 py-4 rounded-xl focus:outline-none overflow-auto whitespace-normal pr-20 resize-none"
+          placeholder="Talk to your Resume..."
+          className="w-full border bg-[#303030] border-slate-300 px-6 py-4 rounded-xl focus:outline-none overflow-auto whitespace-normal pr-20 resize-none"
           style={{ lineHeight: "1.5" }}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
