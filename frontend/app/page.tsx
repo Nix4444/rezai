@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Logo from "./components/Logo";
 import LoginButton from "./components/LoginButton";
@@ -15,13 +15,31 @@ import Footer from "./components/Footer";
 export default function Home() {
   const { data: session } = useSession();
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [isVisible, setIsVisible] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   // If user is already logged in, redirect to chat
   useEffect(() => {
     if (session) {
-      router.push("/chat");
+      // @ts-ignore - Accessing role property from session
+      const userRole = session.user?.role;
+      
+      // Slight delay to allow for any pending state updates
+      const redirectTimer = setTimeout(() => {
+        if (userRole === "ADMIN") {
+          router.push("/admin");
+        } else {
+          router.push("/chat");
+        }
+      }, 1500); // Add a slight delay for a better user experience
+      
+      return () => clearTimeout(redirectTimer);
     }
   }, [session, router]);
 
@@ -46,10 +64,94 @@ export default function Home() {
     };
   }, []);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // This would be implemented with email provider in Next Auth
-    alert("Email login not implemented yet. Please use Google login.");
+    setIsLoading(true);
+    setError("");
+    setSuccess("");
+    
+    // Basic validation
+    if (username.length < 3) {
+      setError("Username must be at least 3 characters");
+      setIsLoading(false);
+      return;
+    }
+    
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      if (isRegistering) {
+        // Additional registration validation
+        if (!email || !email.includes('@')) {
+          setError("Please enter a valid email address");
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log("Registering with:", { username, email, password: "***" });
+        
+        // Register new user
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username, email, password }),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          setError(data.error || "Registration failed");
+          return;
+        }
+        
+        console.log("Registration successful");
+        
+        // Instead of signing in, show success message and switch to login mode
+        setIsRegistering(false);
+        setUsername("");
+        setPassword("");
+        // Display success message
+        setSuccess("Registration successful! Please sign in with your new credentials.");
+        return;
+      } else {
+        // Login user
+        console.log("Logging in with username:", username);
+        
+        const result = await signIn("credentials", {
+          redirect: false,
+          username,
+          password,
+        });
+        
+        if (result?.error) {
+          setError("Invalid username or password");
+        } else if (result?.ok) {
+          // Successfully logged in, but wait for session update
+          console.log("Login successful, waiting for session update");
+          setSuccess("Login successful! Redirecting to your dashboard...");
+        }
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again.");
+      console.error("Auth error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleMode = () => {
+    setIsRegistering(!isRegistering);
+    setError("");
+    setSuccess("");
+    setUsername("");
+    setPassword("");
+    setEmail("");
   };
 
   return (
@@ -120,8 +222,100 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-[#3d3d3d]"></div>
                 </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-[#2d2d2d] text-gray-400">Or continue with username</span>
+                </div>
               </div>
 
+              <form onSubmit={handleAuthSubmit}>
+                {error && (
+                  <div className="mb-4 p-3 bg-red-900/20 border border-red-800 rounded text-red-200 text-sm">
+                    {error}
+                  </div>
+                )}
+                
+                {success && (
+                  <div className="mb-4 p-3 bg-green-900/20 border border-green-800 rounded text-green-200 text-sm">
+                    {success}
+                  </div>
+                )}
+                
+                <div className="mb-4">
+                  <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full bg-[#3d3d3d] border border-[#4d4d4d] rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#64ffda] focus:border-transparent"
+                    placeholder="johndoe"
+                    required
+                    autoComplete="username"
+                    minLength={3}
+                  />
+                </div>
+                
+                {isRegistering && (
+                  <div className="mb-4">
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-[#3d3d3d] border border-[#4d4d4d] rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#64ffda] focus:border-transparent"
+                      placeholder="name@example.com"
+                      required
+                      autoComplete="email"
+                    />
+                  </div>
+                )}
+                
+                <div className="mb-6">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="w-full bg-[#3d3d3d] border border-[#4d4d4d] rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#64ffda] focus:border-transparent"
+                    placeholder="••••••••"
+                    required
+                    autoComplete={isRegistering ? "new-password" : "current-password"}
+                    minLength={6}
+                  />
+                  {isRegistering && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Password must be at least 6 characters long
+                    </p>
+                  )}
+                </div>
+                
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-[#64ffda] hover:bg-[#4de6c2] text-gray-900 font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? "Processing..." : isRegistering ? "Sign up" : "Sign in"}
+                </button>
+                
+                <div className="mt-4 text-center">
+                  <button 
+                    type="button"
+                    onClick={toggleMode}
+                    className="text-sm text-[#64ffda] hover:underline"
+                  >
+                    {isRegistering ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+                  </button>
+                </div>
+              </form>
+              
               <p className="text-xs text-gray-500 mt-4">
                 By continuing, you agree to RezAI's{" "}
                 <a href="#" className="text-[#64ffda] hover:underline">

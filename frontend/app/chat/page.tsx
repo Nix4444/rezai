@@ -81,11 +81,9 @@ export default function ChatPage() {
       <main className="flex-1 w-full bg-[#212121] flex flex-col">
         <div className="w-full h-full flex-1 flex flex-col">
           
-          {/* Split view with ChatInput and Preview side by side */}
           <div className="flex rounded-lg overflow-hidden shadow-lg flex-1 h-full">
-            {/* Left side - Chat */}
+
             <div className="w-1/2 bg-[#212121] p-6 border-t border-l border-r border-gray-700 flex flex-col h-full">
-              <h2 className="text-lg font-semibold mb-4 text-white">Chat</h2>
               
               {/* Display messages */}
               <div className="flex flex-col space-y-4 flex-1 overflow-y-auto h-full custom-scrollbar pb-20">

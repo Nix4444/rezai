@@ -15,7 +15,7 @@ export default function LoginButton({
 }: LoginButtonProps) {
   const handleLogin = () => {
     if (provider === "google") {
-      signIn("google", { callbackUrl: "/chat" });
+      signIn("google");
     }
     // Handle email login if implemented
   };
