@@ -8,11 +8,89 @@ import LogoutButton from "../components/LogoutButton";
 import { ChatInput } from "../components/ChatInput";
 import { Preview } from "../components/Preview";
 import { chatBubbleType } from "../types/chatBubbleType";
+import AtsScore from "../components/AtsScore";
+import Credits from "../components/Credits";
+import axios from "axios";
+import { useAtom } from "jotai";
+import { resumeHtmlAtom } from "../components/ChatInput";
 
 export default function ChatPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [messages, setMessages] = useState<chatBubbleType[]>([]);
+  const [, setResumeHtml] = useAtom(resumeHtmlAtom);
+  const [profileLoaded, setProfileLoaded] = useState(false);
+
+  // Check for existing profile and load HTML when session is available
+  useEffect(() => {
+    const loadExistingProfile = async () => {
+      if (session?.user?.id && !profileLoaded) {
+        try {
+          // Get the JWT token from the session
+          const tokenResponse = await fetch('/api/auth/token');
+          const { token } = await tokenResponse.json();
+          
+          if (!token) {
+            console.error('Failed to get token');
+            return;
+          }
+          
+          try {
+
+            const htmlResponse = await axios.get('http://localhost:3001/api/generate-resume?checkOnly=true', {
+              headers: { 
+                Authorization: `Bearer ${token}` 
+              },
+              withCredentials: true
+            });
+            
+            if (htmlResponse.data) {
+
+              const content = htmlResponse.data;
+              const hasContent = content && content.trim() !== '';
+              
+              if (hasContent) {
+                setResumeHtml(content);
+                setProfileLoaded(true);
+                
+                // Add a message indicating the existing resume has been loaded
+                setMessages([
+                  { type: 'answer', text: 'Welcome back! I\'ve loaded your existing resume. You can see it in the preview panel. Would you like to make any changes to it?', skeleton: false }
+                ]);
+              } else {
+                setProfileLoaded(true);
+                setMessages([
+                  { type: 'answer', text: 'Let\'s create a resume for you. What kind of role are you looking for?', skeleton: false }
+                ]);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching resume HTML:', error);
+            if (axios.isAxiosError(error) && error.response) {
+              if (error.response.status === 404) {
+                setProfileLoaded(true);
+                setMessages([
+                  { type: 'answer', text: 'Let\'s create a resume for you. What kind of role are you looking for?', skeleton: false }
+                ]);
+              } else {
+                console.error('Response data:', error.response.data);
+                console.error('Response status:', error.response.status);
+              }
+            }
+
+            setProfileLoaded(true);
+          }
+        } catch (error) {
+          console.error('Error in auth token process:', error);
+          setProfileLoaded(true);
+        }
+      }
+    }
+    
+    if (status === "authenticated") {
+      loadExistingProfile();
+    }
+  }, [session, status, setResumeHtml, profileLoaded]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -38,14 +116,29 @@ export default function ChatPage() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Logo />
           <div className="flex items-center">
+          
+            <button 
+              onClick={() => router.push("/tools")}
+              className="text-sm text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded mr-3 cursor-pointer"
+            >
+              Tools
+            </button>
+            <button 
+              onClick={() => router.push("/templates")}
+              className="text-sm text-white bg-gray-700 hover:bg-gray-600 px-3 py-1 rounded mr-3 cursor-pointer"
+            >
+              Templates
+            </button>
+            <Credits balance={3} />
+          
             <div className="text-sm mr-4 text-white">
-              {session.user?.name || session.user?.email}
+              {(session.user as any)?.name || (session.user as any)?.email}
             </div>
             <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center mr-4">
-              {session.user?.image ? (
+              {(session.user as any)?.image ? (
                 <img
-                  src={session.user.image}
-                  alt={session.user.name || "User"}
+                  src={(session.user as any).image}
+                  alt={(session.user as any).name || "User"}
                   className="w-8 h-8 rounded-full"
                 />
               ) : (
@@ -72,6 +165,7 @@ export default function ChatPage() {
                   />
                 </svg>
               )}
+              
             </div>
             <LogoutButton />
           </div>
@@ -101,10 +195,10 @@ export default function ChatPage() {
                     
                     {msg.type === 'question' && (
                       <div className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center ml-3 flex-shrink-0">
-                        {session.user?.image ? (
+                        {(session.user as any)?.image ? (
                           <img
-                            src={session.user.image}
-                            alt={session.user.name || "User"}
+                            src={(session.user as any).image}
+                            alt={(session.user as any).name || "User"}
                             className="w-8 h-8 rounded-full"
                           />
                         ) : (

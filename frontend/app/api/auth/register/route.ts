@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/database";
 import bcrypt from "bcrypt";
 import { Role } from "@prisma/client";
 import { v4 as uuidv4 } from 'uuid';
@@ -58,36 +58,20 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
     
-    // Generate a new UUID
     const userId = uuidv4();
     const now = new Date();
 
-    console.log("Creating user with:", {
-      id: userId,
-      username,
-      email: email.toLowerCase(),
-      role: "USER",
-    });
 
-    // Create new user with raw query
     await prisma.$executeRaw`
-      INSERT INTO "User" (
-        "id", "email", "username", "password", "role", 
-        "basic_details", "education", "work_experience", 
-        "skills", "certifications", "projects", 
-        "extracurricular", "position_of_responsibility",
-        "createdAt", "updatedAt"
-      ) 
-      VALUES (
-        ${userId}, ${email.toLowerCase()}, ${username}, ${hashedPassword}, 'USER',
-        '', '', '',
-        '', '', '',
-        '', '',
-        ${now}, ${now}
-      )
-    `;
+            INSERT INTO "User" (
+              "id", "email", "username", "password", "role", "profile","formatted",
+              "createdAt", "updatedAt"
+            ) 
+            VALUES (
+              ${userId}, ${email}, ${username}, ${hashedPassword}, 'USER','','',${now}, ${now}
+            )
+          `;
 
-    console.log("User created successfully:", userId);
 
     // Return success
     return NextResponse.json(

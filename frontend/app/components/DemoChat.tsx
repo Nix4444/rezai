@@ -40,7 +40,7 @@ export default function DemoChat() {
           <h3 className="text-lg font-semibold mb-2 text-[#64ffda]">Professional Resume</h3>
           
           <div className="mb-4">
-            <h4 className="text-md font-medium mb-2 text-white">John Doe</h4>
+            <h4 className="text-md font-medium mb-2 text-white">Avi Singh</h4>
             <p className="text-sm text-gray-300 mb-1">Software Developer</p>
             <p className="text-xs text-gray-400 mb-3">john.doe@example.com | (555) 123-4567 | San Francisco, CA</p>
             <div className="w-full h-px bg-[#4d4d4d] my-3"></div>

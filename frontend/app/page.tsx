@@ -27,8 +27,8 @@ export default function Home() {
   // If user is already logged in, redirect to chat
   useEffect(() => {
     if (session) {
-      // @ts-ignore - Accessing role property from session
-      const userRole = session.user?.role;
+      // Get user role from session
+      const userRole = session.user?.role as string | undefined;
       
       // Slight delay to allow for any pending state updates
       const redirectTimer = setTimeout(() => {
@@ -85,16 +85,13 @@ export default function Home() {
     
     try {
       if (isRegistering) {
-        // Additional registration validation
         if (!email || !email.includes('@')) {
           setError("Please enter a valid email address");
           setIsLoading(false);
           return;
         }
         
-        console.log("Registering with:", { username, email, password: "***" });
         
-        // Register new user
         const response = await fetch('/api/auth/register', {
           method: 'POST',
           headers: {
@@ -110,36 +107,34 @@ export default function Home() {
           return;
         }
         
-        console.log("Registration successful");
         
-        // Instead of signing in, show success message and switch to login mode
         setIsRegistering(false);
         setUsername("");
         setPassword("");
-        // Display success message
         setSuccess("Registration successful! Please sign in with your new credentials.");
         return;
       } else {
-        // Login user
-        console.log("Logging in with username:", username);
         
-        const result = await signIn("credentials", {
-          redirect: false,
-          username,
-          password,
-        });
-        
-        if (result?.error) {
-          setError("Invalid username or password");
-        } else if (result?.ok) {
-          // Successfully logged in, but wait for session update
-          console.log("Login successful, waiting for session update");
-          setSuccess("Login successful! Redirecting to your dashboard...");
+        try {
+          const result = await signIn("credentials", {
+            redirect: false,
+            username,
+            password,
+          });
+          
+          
+          if (result?.ok) {
+            setError("");
+            setSuccess("Login successful! Redirecting to your dashboard...");
+          } else if (result?.error) {
+            setError("Invalid username or password");
+          }
+        } catch (loginError) {
+          setError("An error occurred during login. Please try again.");
         }
       }
     } catch (err) {
       setError("An error occurred. Please try again.");
-      console.error("Auth error:", err);
     } finally {
       setIsLoading(false);
     }
@@ -182,7 +177,7 @@ export default function Home() {
             <h1 className="text-5xl font-bold mb-6">
               Create your perfect resume
               <br />
-              <span className="text-[#64ffda]">with AI</span>
+              <span className="text-[#64ffda]">with RezAI</span>
             </h1>
             <p className="text-xl text-gray-400 mb-10">
               Craft a professional resume through conversation in minutes. No templates or formatting required.
@@ -250,7 +245,7 @@ export default function Home() {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     className="w-full bg-[#3d3d3d] border border-[#4d4d4d] rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-[#64ffda] focus:border-transparent"
-                    placeholder="johndoe"
+                    placeholder="Avi Singh"
                     required
                     autoComplete="username"
                     minLength={3}

@@ -17,7 +17,7 @@ export default function LoginButton({
     if (provider === "google") {
       signIn("google");
     }
-    // Handle email login if implemented
+
   };
 
   return (
